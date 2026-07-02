@@ -6,6 +6,7 @@ import { foodItemIdParamSchema } from '../schemas/foodItem.schema';
 const router = Router();
 
 router.get('/', foodItemsController.getFoodItems);
+router.get('/plans', foodItemsController.getPlans);
 router.get('/:id', validate(foodItemIdParamSchema), foodItemsController.getFoodItemById);
 
 export default router;

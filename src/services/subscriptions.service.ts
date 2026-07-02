@@ -90,7 +90,11 @@ export const getMySubscriptions = async (userId: string) => {
     .select(`
       *,
       subscription_plans (*),
-      addresses (*)
+      addresses (*),
+      subscription_items (
+        *,
+        food_items (*)
+      )
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });

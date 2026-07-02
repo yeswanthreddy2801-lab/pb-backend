@@ -21,3 +21,12 @@ export const getFoodItemById = async (req: Request, res: Response) => {
     return sendError(res, error.message, null, 404);
   }
 };
+
+export const getPlans = async (req: Request, res: Response) => {
+  try {
+    const plans = await foodItemsService.getPlans();
+    return sendSuccess(res, plans);
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};

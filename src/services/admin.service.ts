@@ -37,7 +37,15 @@ export const getStats = async () => {
 export const getOrders = async (status?: string, search?: string, page = 1, limit = 20) => {
   let query = supabase
     .from('subscriptions')
-    .select(`*, users (name, mobile), subscription_plans (name)`, { count: 'exact' })
+    .select(`
+      *, 
+      users (name, mobile), 
+      subscription_plans (*),
+      subscription_items (
+        *,
+        food_items (*)
+      )
+    `, { count: 'exact' })
     .order('created_at', { ascending: false });
 
   if (status) {
@@ -187,7 +195,7 @@ export const getCustomerById = async (id: string) => {
 export const getInventory = async () => {
   const { data, error } = await supabase
     .from('food_items')
-    .select('*')
+    .select('id, name, category, planType:plan_type, protein:protein_g, calories, price, imageUrl:image_url, emoji, color, description, isActive:is_active, isAvailable:is_available, sortOrder:sort_order')
     .order('sort_order', { ascending: true });
 
   if (error) throw new Error('Failed to fetch inventory');
