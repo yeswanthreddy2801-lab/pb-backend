@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const userLoginSchema = z.object({
   body: z.object({
     mobile: z.string().regex(/^[0-9]{10}$/, 'Mobile number must be exactly 10 digits'),
+    name: z.string().min(1, 'Name cannot be empty').optional(),
   }),
 });
 

@@ -4,8 +4,8 @@ import { sendSuccess, sendError } from '../utils/response';
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { mobile } = req.body;
-    const data = await loginUser(mobile);
+    const { mobile, name } = req.body;
+    const data = await loginUser(mobile, name);
     return sendSuccess(res, data, 'Login successful');
   } catch (error: any) {
     return sendError(res, error.message);
