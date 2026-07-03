@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { supabase } from '../config/supabase';
 import { generateUserToken, generateAdminToken } from '../utils/jwt';
 
