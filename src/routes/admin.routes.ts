@@ -3,7 +3,13 @@ import * as adminController from '../controllers/admin.controller';
 import { authenticate } from '../middleware/authenticate';
 import { adminOnly } from '../middleware/adminOnly';
 import { validate } from '../middleware/validate';
-import { orderIdParamSchema, rejectOrderSchema } from '../schemas/admin.schema';
+import { 
+  orderIdParamSchema, 
+  rejectOrderSchema,
+  createPlanSchema,
+  updatePlanSchema,
+  planIdParamSchema
+} from '../schemas/admin.schema';
 import { 
   createFoodItemSchema, 
   updateFoodItemSchema, 
@@ -33,5 +39,11 @@ router.post('/inventory', validate(createFoodItemSchema), adminController.create
 router.patch('/inventory/:id', validate(updateFoodItemSchema), adminController.updateFoodItem);
 router.delete('/inventory/:id', validate(foodItemIdParamSchema), adminController.deleteFoodItem);
 router.patch('/inventory/:id/toggle', validate(foodItemIdParamSchema), adminController.toggleFoodItemAvailability);
+
+// Subscription Plans
+router.get('/plans', adminController.getPlans);
+router.post('/plans', validate(createPlanSchema), adminController.createPlan);
+router.patch('/plans/:id', validate(updatePlanSchema), adminController.updatePlan);
+router.delete('/plans/:id', validate(planIdParamSchema), adminController.deletePlan);
 
 export default router;

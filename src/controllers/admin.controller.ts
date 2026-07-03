@@ -142,3 +142,46 @@ export const toggleFoodItemAvailability = async (req: Request, res: Response) =>
     return sendError(res, error.message);
   }
 };
+
+// --- SUBSCRIPTION PLANS ---
+
+export const getPlans = async (req: Request, res: Response) => {
+  try {
+    const plans = await adminService.getPlans();
+    return sendSuccess(res, plans);
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
+export const createPlan = async (req: Request, res: Response) => {
+  try {
+    const adminId = (req.user as any).adminId;
+    const plan = await adminService.createPlan(adminId, req.body);
+    return sendSuccess(res, plan, 'Plan created successfully', 201);
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
+export const updatePlan = async (req: Request, res: Response) => {
+  try {
+    const adminId = (req.user as any).adminId;
+    const { id } = req.params;
+    const plan = await adminService.updatePlan(adminId, id, req.body);
+    return sendSuccess(res, plan, 'Plan updated successfully');
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
+export const deletePlan = async (req: Request, res: Response) => {
+  try {
+    const adminId = (req.user as any).adminId;
+    const { id } = req.params;
+    await adminService.deletePlan(adminId, id);
+    return sendSuccess(res, null, 'Plan deleted successfully');
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};

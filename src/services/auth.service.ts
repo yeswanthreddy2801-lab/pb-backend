@@ -79,3 +79,34 @@ export const loginAdmin = async (mobile: string, passwordPlain: string) => {
 
   return { token, admin: { id: admin.id, name: admin.name, role: admin.role } };
 };
+
+export const changeAdminPassword = async (adminId: string, currentPasswordPlain: string, newPasswordPlain: string) => {
+  const { data: admin, error: findError } = await supabase
+    .from('admins')
+    .select('*')
+    .eq('id', adminId)
+    .single();
+
+  if (findError || !admin) {
+    throw new Error('Admin not found');
+  }
+
+  const isMatch = await bcrypt.compare(currentPasswordPlain, admin.password_hash);
+
+  if (!isMatch) {
+    throw new Error('Current password is incorrect');
+  }
+
+  const newPasswordHash = await bcrypt.hash(newPasswordPlain, 10);
+
+  const { error: updateError } = await supabase
+    .from('admins')
+    .update({ password_hash: newPasswordHash })
+    .eq('id', adminId);
+
+  if (updateError) {
+    throw new Error('Failed to update password');
+  }
+
+  return true;
+};

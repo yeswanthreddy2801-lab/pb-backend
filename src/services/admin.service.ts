@@ -41,6 +41,7 @@ export const getOrders = async (status?: string, search?: string, page = 1, limi
       *, 
       users (name, mobile), 
       subscription_plans (*),
+      addresses (*),
       subscription_items (
         *,
         food_items (*)
@@ -263,18 +264,17 @@ export const deleteFoodItem = async (adminId: string, id: string) => {
 };
 
 export const toggleFoodItemAvailability = async (adminId: string, id: string) => {
-  const { data: item } = await supabase.from('food_items').select('is_available').eq('id', id).single();
-  
-  if (!item) throw new Error('Food item not found');
+  const { data: item, error: findError } = await supabase.from('food_items').select('*').eq('id', id).single();
+  if (findError || !item) throw new Error('Food item not found');
 
   const { data, error } = await supabase
     .from('food_items')
-    .update({ is_available: !item.is_available })
+    .update({ is_available: !item.is_available, updated_at: new Date().toISOString() })
     .eq('id', id)
-    .select('*')
+    .select()
     .single();
 
-  if (error) throw new Error('Failed to toggle availability');
+  if (error) throw new Error(error.message);
 
   await supabase.from('activity_logs').insert([{
     actor_id: adminId,
@@ -285,4 +285,76 @@ export const toggleFoodItemAvailability = async (adminId: string, id: string) =>
   }]);
 
   return data;
+};
+
+// --- SUBSCRIPTION PLANS MANAGEMENT ---
+
+export const getPlans = async () => {
+  const { data, error } = await supabase
+    .from('subscription_plans')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const createPlan = async (adminId: string, payload: any) => {
+  const { data, error } = await supabase
+    .from('subscription_plans')
+    .insert([payload])
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  
+  await supabase.from('activity_logs').insert([{
+    actor_id: adminId,
+    actor_type: 'admin',
+    action: 'created_plan',
+    entity_type: 'subscription_plan',
+    entity_id: data.id,
+  }]);
+
+  return data;
+};
+
+export const updatePlan = async (adminId: string, id: string, payload: any) => {
+  const { data, error } = await supabase
+    .from('subscription_plans')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  await supabase.from('activity_logs').insert([{
+    actor_id: adminId,
+    actor_type: 'admin',
+    action: 'updated_plan',
+    entity_type: 'subscription_plan',
+    entity_id: id,
+  }]);
+
+  return data;
+};
+
+export const deletePlan = async (adminId: string, id: string) => {
+  const { error } = await supabase
+    .from('subscription_plans')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw new Error(error.message);
+
+  await supabase.from('activity_logs').insert([{
+    actor_id: adminId,
+    actor_type: 'admin',
+    action: 'deleted_plan',
+    entity_type: 'subscription_plan',
+    entity_id: id,
+  }]);
+
+  return true;
 };

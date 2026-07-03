@@ -40,7 +40,7 @@ export const createSubscription = async (userId: string, payload: any) => {
       address_id: payload.address_id,
       duration_days: payload.duration_days,
       notes: payload.notes,
-      total_price: totals.total_price,
+      total_price: totals.total_price * payload.duration_days,
       total_protein: totals.total_protein,
       total_calories: totals.total_calories,
       status: SUBSCRIPTION_STATUS.PENDING,
