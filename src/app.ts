@@ -15,6 +15,9 @@ import adminRoutes from './routes/admin.routes';
 
 const app = express();
 
+// Trust proxy for Render load balancers so rate limiter gets correct IPs
+app.set('trust proxy', 1);
+
 // Security middlewares
 app.use(helmet());
 app.use(cors({
