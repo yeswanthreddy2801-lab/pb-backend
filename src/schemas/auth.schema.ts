@@ -7,6 +7,12 @@ export const userLoginSchema = z.object({
   }),
 });
 
+export const checkUserSchema = z.object({
+  body: z.object({
+    mobile: z.string().regex(/^[0-9]{10}$/, 'Mobile number must be exactly 10 digits'),
+  }),
+});
+
 export const adminLoginSchema = z.object({
   body: z.object({
     mobile: z.string().regex(/^[0-9]{10}$/, 'Mobile number must be exactly 10 digits'),

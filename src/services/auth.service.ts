@@ -2,6 +2,20 @@ import bcrypt from 'bcryptjs';
 import { supabase } from '../config/supabase';
 import { generateUserToken, generateAdminToken } from '../utils/jwt';
 
+export const checkUserExists = async (mobile: string) => {
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('id')
+    .eq('mobile', mobile)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') {
+    throw new Error('Database error while checking user');
+  }
+
+  return !!user;
+};
+
 export const loginUser = async (mobile: string, name?: string) => {
   // Check if user exists
   const { data: existingUser, error: findError } = await supabase

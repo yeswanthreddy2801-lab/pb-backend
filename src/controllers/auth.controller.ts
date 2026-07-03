@@ -12,6 +12,16 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+export const checkUser = async (req: Request, res: Response) => {
+  try {
+    const { mobile } = req.body;
+    const exists = await require('../services/auth.service').checkUserExists(mobile);
+    return sendSuccess(res, { exists }, 'User checked successfully');
+  } catch (error: any) {
+    return sendError(res, error.message);
+  }
+};
+
 export const adminLogin = async (req: Request, res: Response) => {
   try {
     const { mobile, password } = req.body;
