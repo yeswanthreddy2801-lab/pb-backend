@@ -12,6 +12,8 @@ import foodItemsRoutes from './routes/foodItems.routes';
 import subscriptionsRoutes from './routes/subscriptions.routes';
 import notificationsRoutes from './routes/notifications.routes';
 import adminRoutes from './routes/admin.routes';
+import deliveryAuthRoutes from './routes/deliveryAuth.routes';
+import deliveryRoutes from './routes/delivery.routes';
 
 const app = express();
 
@@ -46,6 +48,9 @@ apiRouter.use('/food-items', foodItemsRoutes);
 apiRouter.use('/subscriptions', subscriptionsRoutes);
 apiRouter.use('/notifications', notificationsRoutes);
 apiRouter.use('/admin', adminRoutes);
+
+apiRouter.use('/delivery/auth', authRateLimiter, deliveryAuthRoutes);
+apiRouter.use('/delivery', deliveryRoutes);
 
 app.use('/api', apiRouter);
 

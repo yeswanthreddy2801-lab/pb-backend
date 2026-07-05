@@ -104,6 +104,16 @@ export const approveOrder = async (subscriptionId: string, adminId: string) => {
 
   if (error) throw new Error('Failed to approve order');
 
+  // Auto-schedule delivery for today
+  const today = new Date().toISOString().split('T')[0];
+  await supabase.from('daily_deliveries').upsert({
+    subscription_id: subscriptionId,
+    customer_id: order.user_id,
+    address_id: order.address_id || null,
+    delivery_date: today,
+    delivery_status: 'pending'
+  }, { onConflict: 'subscription_id,delivery_date' });
+
   await supabase.from('approvals').insert([{
     subscription_id: subscriptionId,
     admin_id: adminId,

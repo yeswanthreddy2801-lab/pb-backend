@@ -35,3 +35,20 @@ INSERT INTO food_items (name, category, plan_type, protein_g, calories, price, e
 ('Tofu (100g)', 'dairy', 'veg', 8, 76, 30, '🍱', '#F0FDF4', 'Plant-based protein block'),
 ('Greek Yogurt (150g)', 'dairy', 'veg', 15, 130, 40, '🥣', '#F8FAFC', 'Thick protein-rich yogurt'),
 ('Quinoa (75g)', 'grain', 'veg', 8, 222, 45, '🌾', '#ECFDF5', 'Complete amino acid grain');
+
+-- DELIVERY MODULE SEED
+INSERT INTO daily_deliveries (
+  delivery_boy_id, subscription_id, customer_id, 
+  address_id, delivery_date, delivery_status, time_slot
+)
+SELECT 
+  (SELECT id FROM delivery_staff WHERE mobile = '8888888888'),
+  s.id,
+  s.user_id,
+  s.address_id,
+  CURRENT_DATE,
+  'pending',
+  'morning_6_8'
+FROM subscriptions s
+WHERE s.status = 'active'
+LIMIT 3;

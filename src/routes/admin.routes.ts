@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as adminController from '../controllers/admin.controller';
+import * as adminDeliveryController from '../controllers/adminDelivery.controller';
 import { authenticate } from '../middleware/authenticate';
 import { adminOnly } from '../middleware/adminOnly';
 import { validate } from '../middleware/validate';
@@ -45,5 +46,14 @@ router.get('/plans', adminController.getPlans);
 router.post('/plans', validate(createPlanSchema), adminController.createPlan);
 router.patch('/plans/:id', validate(updatePlanSchema), adminController.updatePlan);
 router.delete('/plans/:id', validate(planIdParamSchema), adminController.deletePlan);
+
+// Delivery Management
+router.get('/delivery/staff', adminDeliveryController.getDeliveryStaff);
+router.post('/delivery/staff', adminDeliveryController.createDeliveryStaff);
+router.get('/delivery/today', adminDeliveryController.getTodayDeliveries);
+router.post('/delivery/assign', adminDeliveryController.assignDelivery);
+router.patch('/delivery/assign/:deliveryId', adminDeliveryController.reassignDelivery);
+router.get('/delivery/stats', adminDeliveryController.getDeliveryStats);
+router.post('/delivery/bulk-assign', adminDeliveryController.bulkAssignDeliveries);
 
 export default router;
