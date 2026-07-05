@@ -35,7 +35,10 @@ export const getFoodItemById = async (id: string) => {
 };
 
 export const getPlans = async () => {
-  const { data, error } = await supabase.from('subscription_plans').select('id, name, slug, description, category, basePrice:base_price, maxItems:max_items, color, emoji:icon');
+  const { data, error } = await supabase
+    .from('subscription_plans')
+    .select('id, name, slug, description, category, basePrice:base_price, maxItems:max_items, color, emoji:icon, isActive:is_active')
+    .eq('is_active', true);
   if (error) throw new Error('Failed to fetch plans');
   return data;
 };

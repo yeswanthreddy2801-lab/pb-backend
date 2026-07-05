@@ -4,32 +4,50 @@ import { SUBSCRIPTION_STATUS } from '../config/constants';
 import { createNotification } from './notifications.service';
 
 export const createSubscription = async (userId: string, payload: any) => {
-  // 1. Validate food items
-  const itemIds = payload.items.map((item: any) => item.food_item_id);
+  let totals = { total_price: 0, total_protein: 0, total_calories: 0 };
+  let itemsWithDetails: any[] = [];
   
-  const { data: foodItems, error: foodError } = await supabase
-    .from('food_items')
-    .select('*')
-    .in('id', itemIds)
-    .eq('is_active', true);
+  if (payload.items && payload.items.length > 0) {
+    // 1. Validate food items
+    const itemIds = payload.items.map((item: any) => item.food_item_id);
+    
+    const { data: foodItems, error: foodError } = await supabase
+      .from('food_items')
+      .select('*')
+      .in('id', itemIds)
+      .eq('is_active', true);
 
-  if (foodError || !foodItems || foodItems.length !== itemIds.length) {
-    throw new Error('One or more food items are invalid or inactive');
+    if (foodError || !foodItems || foodItems.length !== itemIds.length) {
+      throw new Error('One or more food items are invalid or inactive');
+    }
+
+    // 2-4. Calculate totals
+    itemsWithDetails = payload.items.map((item: any) => {
+      const foodItem = foodItems.find(f => f.id === item.food_item_id);
+      return {
+        food_item_id: foodItem.id,
+        quantity: item.quantity,
+        price: foodItem.price,
+        protein_g: foodItem.protein_g,
+        calories: foodItem.calories,
+      };
+    });
+
+    totals = calculateTotals(itemsWithDetails);
+  } else if (payload.plan_id) {
+    // 1b. Fetch plan base price if no items were customized
+    const { data: plan, error: planError } = await supabase
+      .from('subscription_plans')
+      .select('base_price')
+      .eq('id', payload.plan_id)
+      .single();
+      
+    if (!planError && plan) {
+      // base_price is monthly price. Since we multiply by duration_days (30) below, 
+      // we set the daily price to base_price / 30
+      totals.total_price = plan.base_price / 30;
+    }
   }
-
-  // 2-4. Calculate totals
-  const itemsWithDetails = payload.items.map((item: any) => {
-    const foodItem = foodItems.find(f => f.id === item.food_item_id);
-    return {
-      food_item_id: foodItem.id,
-      quantity: item.quantity,
-      price: foodItem.price,
-      protein_g: foodItem.protein_g,
-      calories: foodItem.calories,
-    };
-  });
-
-  const totals = calculateTotals(itemsWithDetails);
 
   // 5. Insert subscription
   const { data: subscription, error: subError } = await supabase
@@ -51,18 +69,20 @@ export const createSubscription = async (userId: string, payload: any) => {
   if (subError) throw new Error('Failed to create subscription');
 
   // 6. Insert items
-  const subItems = itemsWithDetails.map((item: any) => ({
-    subscription_id: subscription.id,
-    food_item_id: item.food_item_id,
-    quantity: item.quantity,
-    unit_price: item.price,
-  }));
+  if (itemsWithDetails.length > 0) {
+    const subItems = itemsWithDetails.map((item: any) => ({
+      subscription_id: subscription.id,
+      food_item_id: item.food_item_id,
+      quantity: item.quantity,
+      unit_price: item.price,
+    }));
 
-  const { error: itemsError } = await supabase
-    .from('subscription_items')
-    .insert(subItems);
+    const { error: itemsError } = await supabase
+      .from('subscription_items')
+      .insert(subItems);
 
-  if (itemsError) throw new Error('Failed to create subscription items');
+    if (itemsError) throw new Error('Failed to create subscription items');
+  }
 
   // 7. Create notification
   await createNotification(

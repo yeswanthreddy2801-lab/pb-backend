@@ -241,7 +241,10 @@ export const updateFoodItem = async (adminId: string, id: string, payload: any) 
     .select('*')
     .single();
 
-  if (error) throw new Error('Failed to update food item');
+  if (error) {
+    console.error("Supabase update error:", error);
+    throw new Error('Failed to update food item: ' + error.message);
+  }
 
   await supabase.from('activity_logs').insert([{
     actor_id: adminId,

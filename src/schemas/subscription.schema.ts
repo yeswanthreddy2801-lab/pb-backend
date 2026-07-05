@@ -9,7 +9,7 @@ export const createSubscriptionSchema = z.object({
     items: z.array(z.object({
       food_item_id: z.string().uuid('Invalid food item ID'),
       quantity: z.number().int().positive().default(1),
-    })).min(1, 'At least one food item must be selected'),
+    })).optional().default([]),
   }),
 });
 
