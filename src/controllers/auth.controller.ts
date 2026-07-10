@@ -4,8 +4,8 @@ import { sendSuccess, sendError } from '../utils/response';
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { mobile, name } = req.body;
-    const data = await loginUser(mobile, name);
+    const { mobile, name, password } = req.body;
+    const data = await loginUser(mobile, name, password);
     return sendSuccess(res, data, 'Login successful');
   } catch (error: any) {
     return sendError(res, error.message);
@@ -15,8 +15,8 @@ export const login = async (req: Request, res: Response) => {
 export const checkUser = async (req: Request, res: Response) => {
   try {
     const { mobile } = req.body;
-    const exists = await require('../services/auth.service').checkUserExists(mobile);
-    return sendSuccess(res, { exists }, 'User checked successfully');
+    const result = await require('../services/auth.service').checkUserExists(mobile);
+    return sendSuccess(res, result, 'User checked successfully');
   } catch (error: any) {
     return sendError(res, error.message);
   }

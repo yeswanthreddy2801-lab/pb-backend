@@ -3,9 +3,19 @@ import { supabase } from '../config/supabase';
 import { generateUserToken, generateAdminToken } from '../utils/jwt';
 
 export const checkUserExists = async (mobile: string) => {
+  const { data: admin } = await supabase
+    .from('admins')
+    .select('id')
+    .eq('mobile', mobile)
+    .single();
+
+  if (admin) {
+    return { isAdmin: true, exists: false, hasPassword: false };
+  }
+
   const { data: user, error } = await supabase
     .from('users')
-    .select('id')
+    .select('id, password_hash')
     .eq('mobile', mobile)
     .single();
   
@@ -13,10 +23,16 @@ export const checkUserExists = async (mobile: string) => {
     throw new Error('Database error while checking user');
   }
 
-  return !!user;
+  return {
+    isAdmin: false,
+    exists: !!user,
+    hasPassword: !!(user && user.password_hash)
+  };
 };
 
-export const loginUser = async (mobile: string, name?: string) => {
+export const loginUser = async (mobile: string, name?: string, passwordPlain?: string) => {
+  if (!passwordPlain) throw new Error('Password is required');
+
   // Check if user exists
   const { data: existingUser, error: findError } = await supabase
     .from('users')
@@ -32,10 +48,11 @@ export const loginUser = async (mobile: string, name?: string) => {
   let isNewUser = false;
 
   if (!user) {
+    const password_hash = await bcrypt.hash(passwordPlain, 10);
     // Create new user
     const { data: newUser, error: createError } = await supabase
       .from('users')
-      .insert([{ mobile, name: name || undefined, is_new_user: true }])
+      .insert([{ mobile, name: name || undefined, is_new_user: true, password_hash }])
       .select('*')
       .single();
 
@@ -46,6 +63,23 @@ export const loginUser = async (mobile: string, name?: string) => {
     user = newUser;
     isNewUser = true;
   } else {
+    if (user.password_hash) {
+      // User has password, check it
+      const isMatch = await bcrypt.compare(passwordPlain, user.password_hash);
+      if (!isMatch) {
+        throw new Error('Invalid credentials');
+      }
+    } else {
+      // Existing user without password, set it up
+      const password_hash = await bcrypt.hash(passwordPlain, 10);
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ password_hash })
+        .eq('id', user.id);
+      if (updateError) throw new Error('Failed to set password');
+      user.password_hash = password_hash;
+    }
+
     // Optionally update is_new_user and name on subsequent logins
     const updates: any = {};
     if (user.is_new_user) updates.is_new_user = false;
