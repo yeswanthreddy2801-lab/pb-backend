@@ -38,6 +38,7 @@ A production-ready Express.js backend for the ProteinBox monthly subscription se
 ## Connecting the Frontend
 In your Lovable frontend project, set the following environment variable:
 ```
+this is used to connect frontend with backend
 VITE_API_BASE_URL=http://localhost:3001/api
 ```
 
