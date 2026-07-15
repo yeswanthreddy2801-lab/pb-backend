@@ -32,7 +32,7 @@ A production-ready Express.js backend for the ProteinBox monthly subscription se
    ```
 
 ## Default Admin Credentials
-- **Mobile**: `8123456789`
+- **Mobile**: `8297364002`
 - **Password**: `Admin@1234`
 
 ## Connecting the Frontend
