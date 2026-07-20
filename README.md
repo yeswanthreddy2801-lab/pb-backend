@@ -105,3 +105,6 @@ This application can be deployed to Render, Railway, or Google Cloud Run.
 3. Set the Build Command to `npm run build` or `tsc`.
 4. Set the Start Command to `npm start` or `node dist/index.js`.
 5. Add all required Environment Variables from `.env` to the deployment platform.
+
+
+everything is working perfectly
